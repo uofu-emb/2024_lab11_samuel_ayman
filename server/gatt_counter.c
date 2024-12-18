@@ -254,7 +254,19 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     return 0;
 }
 /* LISTING_END */
-
+static void temperature_task(__unused void *args)
+{
+    while (true) {
+        float temp = temperature_poll();
+        if (xSemaphoreTake(temp_semaphore, 10)) {
+            temp_measurement = temp;
+            xSemaphoreGive(temp_semaphore);
+        } else {
+            printf("Unable to acquire semaphore\n");
+        }
+        vTaskDelay(100);
+    }
+}
 int btstack_main(void);
 int btstack_main(void)
 {
